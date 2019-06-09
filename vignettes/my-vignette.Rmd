@@ -1,0 +1,70 @@
+---
+title: "Guide to using eur and eurusds functions"
+author: "Anna Alexandra Grigoryan"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{my-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(convertcurr)
+```
+
+Using the packages `convertcurr::eurusds` and `convertcurr::eur` with the `binancer` package. Fetching the daily volume of Bitcoins sold for "USDT" on Binance and reporting the overall value of this asset in EUR. 
+
+First we import the daily BTCUSD prices via the binancer API. 
+
+```{r}
+library(binancer)
+library(data.table)
+library(logger)
+library(ggplot2)
+library(convertcurr)
+library(devtools)
+library(pkgdown)
+
+coin_prices <- binance_klines('BTCUSDT', interval = '1d', limit = 45)
+balance <- coin_prices[, .(date = as.Date(close_time), btcusd = close, volume_usd = volume)]
+
+```
+
+Then  we calculate the value of the assets in EUR using the function `convertcurr::eurusds`.
+We use the rolling join for merging the exchange rates and bitcoin volume. 
+
+```{r}
+date_to <- Sys.Date()
+date_from <- Sys.Date() - 45
+exchangerate <- eurusds(date_from, date_to)
+setkey(balance, date)
+setkey(exchangerate, date)
+balance <- exchangerate[balance, roll = TRUE] ## DT[i, j, by = ...]
+
+balance[, value := volume_usd * btcusd * eurusd]
+
+```
+
+
+Finally, we use the `ggplot2::ggplot` to visualize the value of assets in EUR for the past 45 days. Additionally, we use the `convertcurr::eur`, to have the EUR sign on the labels.
+
+```{r}
+ggplot(data = balance, aes(x = date, y = value)) +
+  geom_line(color = 'blue') +
+  scale_y_continuous(labels = eur)+
+  theme_bw() +
+  labs(title = 'Total BTC asset value in EUR in the last 45 days', x = 'EUR value', y = 'day')
+
+```
+
+
+
+

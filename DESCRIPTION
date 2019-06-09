@@ -1,0 +1,15 @@
+Package: convertcurr
+Type: Package
+Title: Updated USD/EUR exchange rate and easy conversion.
+Version: 0.1.0
+Author: Anna Alexandra Grigoryan
+Maintainer: Anna Alexandra Grigoryan <anna.alexandra.grigoryan@gmail.com>
+Description: Looks up the most recent USD/EUR exchange rate via an API call and returns the rate as a number, returns a data.table object on the daily rates for a specified period of time with 2 columns (date and exchange rate), looks up the most recent USD/EUR exchange rate and computes the provided USD amount in EUR (as a number)
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 6.1.1
